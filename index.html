@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <meta name="theme-color" content="#080808"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="GymDiario"/>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon.svg"/>
+  <title>GymDiario</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;overflow:hidden;background:#080808}
+    body{font-family:'Share Tech Mono',monospace;color:#e5e5e5;-webkit-font-smoothing:antialiased}
+    #app{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+
+    /* HEADER */
+    #header{background:#0c0c0c;border-bottom:1px solid #181818;padding:12px 14px 0;flex-shrink:0;z-index:100}
+    .hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .app-lbl{font-size:8px;color:#333;letter-spacing:3px}
+    .app-title{font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;font-family:'Barlow',sans-serif}
+    .hdr-right{display:flex;gap:6px;align-items:center}
+    .streak-pill{background:#1a0f00;border:1px solid #3a1f00;border-radius:20px;padding:3px 9px;font-size:10px;color:#f97316;display:none}
+    .clock{font-size:10px;color:#333;font-variant-numeric:tabular-nums}
+    #pb-wrap{margin-bottom:10px;display:none}
+    .pb-row{display:flex;justify-content:space-between;margin-bottom:3px}
+    .pb-lbl{font-size:8px;color:#333;letter-spacing:1px}
+    .pb-pct{font-size:8px}
+    .pb-track{height:2px;background:#1a1a1a;border-radius:4px}
+    .pb-fill{height:100%;border-radius:4px;transition:width .4s}
+    #nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+    #nav::-webkit-scrollbar{display:none}
+    .nav-btn{padding:5px 10px;border-radius:20px;border:none;cursor:pointer;font-size:10px;font-family:'Share Tech Mono',monospace;font-weight:700;white-space:nowrap;flex-shrink:0;transition:all .2s;background:#161616;color:#444}
+    .nav-btn.active{color:#000}
+
+    /* CONTENT */
+    #content{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 12px 30px;-webkit-overflow-scrolling:touch}
+    .view{display:none}.view.active{display:block}
+    .sec-lbl{font-size:8px;color:#333;letter-spacing:2px;margin-bottom:10px}
+    .card{background:#111;border:1px solid #1c1c1c;border-radius:12px;margin-bottom:10px;overflow:hidden}
+    .card-hdr{padding:10px 12px;border-bottom:1px solid #161616;display:flex;justify-content:space-between;align-items:flex-start}
+    .card-body{padding:10px 12px}
+    .ex-name{font-size:11px;font-weight:700;color:#ddd;margin-bottom:2px;font-family:'Barlow',sans-serif}
+    .ex-meta{font-size:9px;color:#383838}
+    .badge{font-size:8px;padding:2px 7px;border-radius:20px;font-weight:700;white-space:nowrap}
+    .badge-pr{background:#1c1400;color:#f59e0b}
+    .badge-up{background:#0a2010;color:#4ade80}
+
+    /* SETS */
+    .sets-hdr{display:grid;grid-template-columns:22px 1fr 1fr 50px 26px;gap:4px;margin-bottom:5px}
+    .sets-hdr span{font-size:8px;color:#2a2a2a;text-align:center}
+    .set-row{display:grid;grid-template-columns:22px 1fr 1fr 50px 26px;gap:4px;margin-bottom:4px;transition:opacity .2s}
+    .set-row.done{opacity:.35}
+    .set-num{background:#141414;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#333;font-weight:700}
+    .set-inp{background:#161616;border:1px solid #252525;border-radius:6px;padding:7px 4px;font-size:13px;font-weight:700;text-align:center;font-family:'Share Tech Mono',monospace;width:100%;outline:none;color:#e5e5e5;-webkit-appearance:none}
+    .set-rm{background:#141414;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#555;font-weight:700}
+    .set-ok{border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s}
+
+    /* DEMO PANEL */
+    .demo-btn{margin-top:6px;width:100%;padding:5px;background:#0e0e0e;border:1px solid #1a1a1a;border-radius:6px;color:#444;font-size:9px;cursor:pointer;font-family:'Share Tech Mono',monospace;display:flex;align-items:center;justify-content:center;gap:6px}
+    .demo-panel{display:none;margin-top:8px;background:#090909;border-radius:10px;overflow:hidden}
+    .demo-panel.open{display:block}
+    .demo-img-wrap{position:relative;width:100%;background:#0d0d0d;min-height:180px;display:flex;align-items:center;justify-content:center}
+    .demo-gif{width:100%;max-height:220px;object-fit:cover;display:block;border-radius:0}
+    .demo-gif.hidden{display:none}
+    .demo-svg-wrap{padding:10px;display:flex;align-items:center;justify-content:center}
+    .demo-loading{position:absolute;font-size:10px;color:#333;text-align:center}
+    .demo-tips{padding:10px 12px;border-top:1px solid #161616}
+    .demo-tip-title{font-size:9px;color:#555;letter-spacing:1px;margin-bottom:6px}
+    .demo-tip{font-size:10px;color:#666;margin-bottom:4px;padding-left:10px;position:relative;line-height:1.4;font-family:'Share Tech Mono',monospace}
+    .demo-tip::before{content:"·";position:absolute;left:0;color:#444}
+
+    /* CHART */
+    .chart-wrap{margin-top:6px;padding:8px;background:#090909;border-radius:8px;display:none}
+    .chart-wrap.open{display:block}
+    .toggle-chart{margin-top:4px;width:100%;padding:4px;background:#0e0e0e;border:1px solid #1a1a1a;border-radius:6px;color:#333;font-size:9px;cursor:pointer;font-family:'Share Tech Mono',monospace}
+
+    /* REST TIMER */
+    .rest-presets{display:flex;gap:5px;margin-bottom:12px}
+    .rest-pre-btn{flex:1;padding:7px 0;background:#161616;border:1px solid #222;border-radius:8px;color:#555;font-size:11px;font-weight:700;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .2s}
+    .rest-display{display:none;align-items:center;gap:14px}
+    .rest-display.vis{display:flex}
+
+    /* STATS */
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+    .stat-card{background:#0e0e0e;border:1px solid #1a1a1a;border-radius:12px;padding:12px}
+    .stat-icon{font-size:16px;margin-bottom:4px}
+    .stat-lbl{font-size:8px;color:#333;letter-spacing:1px}
+    .stat-val{font-size:20px;font-weight:900;margin-top:2px;font-family:'Barlow',sans-serif}
+
+    /* MISC */
+    .pr-row{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid #141414}
+    .pr-name{font-size:10px;color:#555;flex:1}
+    .pr-val{font-size:13px;font-weight:700;color:#f59e0b;font-family:'Barlow',sans-serif}
+    .day-btn{background:#0e0e0e;border:1px solid #1a1a1a;border-radius:10px;padding:9px 12px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;transition:all .2s;width:100%;margin-bottom:4px}
+    .day-name-big{font-size:11px;font-weight:700;font-family:'Barlow',sans-serif}
+    .day-sub{font-size:9px;color:#2a2a2a}
+    .hist-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #121212}
+    .hist-ex{font-size:9px;color:#444}.hist-w{font-size:9px;color:#666;font-weight:700}
+    .hist-note{margin-top:7px;padding:5px 8px;background:#0e0e0e;border-radius:6px;font-size:9px;color:#555;font-style:italic}
+    textarea{width:100%;background:#141414;border:1px solid #1e1e1e;border-radius:8px;padding:9px;color:#777;font-size:11px;font-family:'Share Tech Mono',monospace;resize:none;height:65px;outline:none}
+    .bw-form{display:flex;gap:8px}
+    .bw-inp{flex:1;background:#161616;border:1px solid #252525;border-radius:8px;padding:8px 10px;color:#e5e5e5;font-size:14px;font-family:'Share Tech Mono',monospace;outline:none}
+    .btn-primary{padding:8px 14px;border:none;border-radius:8px;color:#000;font-weight:700;font-size:12px;cursor:pointer;font-family:'Share Tech Mono',monospace}
+    .btn-block{width:100%;padding:10px;border:none;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:'Share Tech Mono',monospace}
+    .btn-danger{width:100%;padding:10px;background:#140000;border:1px solid #3a0000;border-radius:8px;color:#ef4444;font-weight:700;font-size:11px;cursor:pointer;font-family:'Share Tech Mono',monospace}
+    .ok-msg{margin-top:7px;font-size:10px;color:#4ade80;text-align:center;display:none}
+    .bw-hist-row{display:flex;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #141414}
+    .empty-state{text-align:center;padding:60px 20px;color:#222;font-size:12px}
+    .empty-icon{font-size:36px;margin-bottom:10px}
+
+    /* INSTALL BANNER */
+    #install-bar{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #2a2a2a;padding:12px 16px;display:none;z-index:500;align-items:center;gap:10px}
+    #install-bar.show{display:flex}
+    .install-txt{flex:1;font-size:11px;color:#888}
+    .install-txt strong{color:#e5e5e5;display:block;margin-bottom:2px;font-family:'Barlow',sans-serif}
+    .inst-btn{padding:7px 12px;border:none;border-radius:8px;font-weight:700;font-size:11px;cursor:pointer;font-family:'Share Tech Mono',monospace}
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div class="hdr-top">
+      <div><div class="app-lbl">DIARIO DE</div><div class="app-title">ENTRENAMIENTO</div></div>
+      <div class="hdr-right">
+        <div class="streak-pill" id="streak-pill"></div>
+        <div class="clock" id="clock" style="display:none"></div>
+      </div>
+    </div>
+    <div id="pb-wrap">
+      <div class="pb-row"><span class="pb-lbl">PROGRESO</span><span class="pb-pct" id="pb-pct"></span></div>
+      <div class="pb-track"><div class="pb-fill" id="pb-fill"></div></div>
+    </div>
+    <div id="nav">
+      <button class="nav-btn active" data-view="train">ENTRENAR</button>
+      <button class="nav-btn" data-view="stats">STATS</button>
+      <button class="nav-btn" data-view="progress">PROGRESO</button>
+      <button class="nav-btn" data-view="body">CUERPO</button>
+      <button class="nav-btn" data-view="history">HISTORIAL</button>
+      <button class="nav-btn" data-view="settings">AJUSTES</button>
+    </div>
+  </div>
+  <div id="content">
+    <div class="view active" id="view-train"></div>
+    <div class="view" id="view-stats"></div>
+    <div class="view" id="view-progress"></div>
+    <div class="view" id="view-body"></div>
+    <div class="view" id="view-history"></div>
+    <div class="view" id="view-settings"></div>
+  </div>
+</div>
+<div id="install-bar">
+  <div class="install-txt"><strong>Instalar GymDiario</strong>Añade la app a tu pantalla de inicio</div>
+  <button class="inst-btn" id="inst-no" style="background:#1a1a1a;color:#555">No gracias</button>
+  <button class="inst-btn" id="inst-yes" style="color:#000">Instalar</button>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
