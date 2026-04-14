@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.github.goldenlcr.twa",
+    "sha256_cert_fingerprints": [
+      "4D:99:09:41:45:E2:93:9E:58:D7:45:2F:E3:3D:C2:C3:6F:42:25:F6:A3:C5:65:8D:4F:61:83:5A:D5:FA:02:E4"
+    ]
+  }
+}]
